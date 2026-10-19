@@ -24,6 +24,6 @@ def handle_conflito(request: Request, exc: ConflitoError):
 def handle_regra(request: Request, exc: RegraDeNegocioError):
     return JSONResponse(status_code=422, content={"detail": str(exc)})
 
-@app.get("/saude")
-def saude():
+@app.get("/health")
+def health():
     return {"status": "ok"}
