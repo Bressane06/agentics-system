@@ -2,6 +2,7 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 from models import get_db
 from repositories.disciplina_repository import DisciplinaRepository
+from repositories.disponibilidade_repository import DisponibilidadeRepository
 from repositories.tarefa_repository import TarefaRepository
 from repositories.historico_repository import HistoricoRepository
 from services.agents.base import Priorizador
