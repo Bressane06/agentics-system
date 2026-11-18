@@ -154,17 +154,25 @@ fora do ar) e ausência de texto do usuário nos prompts.
 - Falha do LLM (timeout, HTTP, JSON inválido, resposta fora do contrato) → fallback determinístico
   + evento `fallback` com o motivo. O plano continua sendo gerado.
 
-## 7. Estrutura
+## 7. Estrutura do Projeto
 
-```
-controllers/   rotas FastAPI           views/       schemas Pydantic
-services/      regras de negócio       models/      SQLAlchemy
-  agents/      priorizador, planejador, avaliador (+ protocolos)
-  tools/       prioridade, agendamento, validação (funções puras)
-  orchestrator.py · llm.py · observability.py · plano_service.py
-repositories/  acesso a dados          data/        seed
-evals/         cenários e runner       tests/       pytest
-```
+```text
+controllers/       # Rotas e endpoints FastAPI
+views/             # Schemas de validação Pydantic
+services/          # Regras de negócio
+models/            # Modelos SQLAlchemy
+agents/             # Agentes: priorizador, planejador e avaliador
+                    # Protocolos e contratos dos agentes
+tools/              # Ferramentas: prioridade, agendamento e validação
+repositories/       # Acesso e operações com dados
+data/               # Dados iniciais (seed)
+evals/              # Cenários e execução de avaliações
+tests/              # Testes automatizados com pytest
+
+orchestrator.py     # Orquestração dos agentes
+llm.py              # Integração com modelos de linguagem
+observability.py    # Monitoramento e rastreabilidade
+plano_service.py    # Serviço de gerenciamento de planos
 
 ## 8. Limitações e próximos passos
 
