@@ -147,7 +147,7 @@ fora do ar) e ausência de texto do usuário nos prompts.
 
 ## 6. Observabilidade e tratamento de falhas
 
-- Cada geração cria um `Tracer`; os agentes emitem eventos (`ajuste_llm`, `fallback`, `decisao`,
+- Cada geração cria um `Tracer`; os agentes emitem eventos (`ajuste_llm`, `llm_confirmou_ordem`, `fallback`, `decisao`,
   `plano_gerado`, `validar`, `fim`) sem receber o tracer por parâmetro (`ContextVar`).
 - Os eventos são **persistidos na tabela `tracos`** junto do plano e expostos em
   `GET /planos/{id}/trace`; também saem como JSON no logger `agentes`.

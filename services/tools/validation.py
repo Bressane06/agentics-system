@@ -19,6 +19,30 @@ SOBRECARGA = "sobrecarga"                       # cabe sozinha, mas a carga acum
 def _fmt(minutos: int) -> str:
     return f"{minutos // 60:02d}:{minutos % 60:02d}"
 
+def _inevitaveis(tarefas: Sequence[TarefaInfo], slots: Sequence[Slot]) -> dict[int, tuple[str, str]]:
+    """Tarefas que ficariam sem cobertura mesmo na melhor ordenação (prazo mais próximo primeiro).
+
+    Percorre por prazo acumulando a demanda; quando ela passa da capacidade até o prazo, essa
+    tarefa é inevitavelmente prejudicada e a capacidade é considerada esgotada. Já uma tarefa
+    curta no plano atual que *não* está aqui é problema de ordenação, não de falta de tempo.
+    """
+    resultado: dict[int, tuple[str, str]] = {}
+    acumulado = 0
+    for t in sorted(tarefas, key=lambda x: (x.prazo, x.id)):
+        necessario = minutos_restantes(t)
+        cap = capacidade_ate(slots, t.prazo)
+        if acumulado + necessario > cap:
+            if necessario > cap:
+                resultado[t.id] = (INVIAVEL, f"Precisa de {necessario} min até {t.prazo}, "
+                                             f"mas só há {cap} min disponíveis")
+            else:
+                resultado[t.id] = (SOBRECARGA, f"Carga acumulada até {t.prazo} é "
+                                               f"{acumulado + necessario} min, mas só há {cap} min disponíveis")
+            acumulado = cap
+        else:
+            acumulado += necessario
+    return resultado
+
 def validar(sessoes: Sequence[SessaoPlanejada], tarefas: Sequence[TarefaInfo],
             slots: Sequence[Slot], hoje: date) -> list[Problema]:
     por_id = {t.id: t for t in tarefas}
@@ -52,6 +76,7 @@ def validar(sessoes: Sequence[SessaoPlanejada], tarefas: Sequence[TarefaInfo],
                     f"Sessões sobrepostas em {data}: {_fmt(a.inicio)}-{_fmt(a.fim)} "
                     f"e {_fmt(b.inicio)}-{_fmt(b.fim)}.", True))
 
+    inevitaveis = _inevitaveis(tarefas, slots)
     for t in tarefas:
         necessario = minutos_restantes(t)
         alocado = sum(s.minutos for s in sessoes if s.tarefa_id == t.id)
@@ -60,20 +85,11 @@ def validar(sessoes: Sequence[SessaoPlanejada], tarefas: Sequence[TarefaInfo],
                                       f"Alocados {alocado} min para {necessario} min necessários.", True))
         elif alocado < necessario:
             falta = necessario - alocado
-            cap = capacidade_ate(slots, t.prazo)
-            demanda = sum(minutos_restantes(o) for o in tarefas if o.prazo <= t.prazo)
-            if cap < necessario:
-                problemas.append(Problema(
-                    INVIAVEL, t.id,
-                    f"Precisa de {necessario} min até {t.prazo}, mas só há {cap} min disponíveis "
-                    f"(faltam {falta} min no plano).", False))
-            elif demanda > cap:
-                # condição necessária violada: nenhuma ordenação consegue cumprir todos os prazos
-                problemas.append(Problema(
-                    SOBRECARGA, t.id,
-                    f"Carga acumulada até {t.prazo} é {demanda} min, mas só há {cap} min "
-                    f"disponíveis (faltam {falta} min desta tarefa).", False))
+            if t.id in inevitaveis:
+                tipo, detalhe = inevitaveis[t.id]
+                problemas.append(Problema(tipo, t.id, f"{detalhe} (faltam {falta} min no plano).", False))
             else:
+                # a melhor ordenação cumpriria esta tarefa: é falha do plano, logo corrigível
                 problemas.append(Problema(
                     COBERTURA_INCOMPLETA, t.id,
                     f"Faltam {falta} min de {necessario} min antes de {t.prazo}.", True))

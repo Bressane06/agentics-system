@@ -1,10 +1,15 @@
 from dataclasses import replace
+from dataclasses import replace
 from datetime import date
 from typing import Sequence
 
 import config
 from services import observability
+
+import config
+from services import observability
 from services.domain import TarefaInfo, ItemPriorizado
+from services.llm import LLMClient, LLMError
 from services.llm import LLMClient, LLMError
 from services.tools import priority
 from services.tools.priority import Pesos
@@ -51,6 +56,12 @@ class PriorizadorLLM:
             return ranking
 
         justificativa = str(resposta.get("justificativa", "")).strip()[:200]
+        if nova_ordem == [i.tarefa.id for i in ranking]:
+            # o modelo devolveu a mesma ordem: não há ajuste a aplicar (mesmo que a justificativa
+            # fale em "mudança"), então o ranking da fórmula e suas justificativas são mantidos
+            observability.emitir("priorizador", "llm_confirmou_ordem",
+                                 ordem=nova_ordem, justificativa_do_llm=justificativa)
+            return ranking
         por_id = {i.tarefa.id: i for i in ranking}
         resultado = []
         for posicao, tid in enumerate(nova_ordem, start=1):

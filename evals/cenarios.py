@@ -99,6 +99,21 @@ def sobrecarga_nao_gasta_revisoes() -> list[Verificacao]:
     return [invariantes(ex), v("sobrecarga detectada", any(p.tipo == "sobrecarga" for p in r.problemas)),
             v("nenhuma revisão de ajuste inútil", all(x.acao == "aceitar" for x in r.revisoes))]
 
+def sobrecarga_nao_esconde_falha_corrigivel() -> list[Verificacao]:
+    # Regressão: com uma tarefa inviável e carga total acima da capacidade, a tarefa curta de
+    # prazo próximo ficava sem horário na ordem por prioridade, mas o diagnóstico a tratava como
+    # "sobrecarga" (não corrigível) e o avaliador aceitava o plano ruim sem revisar.
+    ex = rodar([tarefa(1, "Trabalho grande", 6, 5, 5, 10.0),
+                tarefa(2, "Lista curta", 1, 2, 2, 2.0),
+                tarefa(3, "Seminário surpresa", 1, 5, 4, 6.0)])
+    r = ex.resultado
+    curta = sum(s.minutos for s in r.sessoes if s.tarefa_id == 2)
+    return [invariantes(ex),
+            v("revisou em vez de aceitar de primeira", r.revisoes[0].acao == "usar_prazo"),
+            v("tarefa curta totalmente coberta", curta == 120),
+            v("tarefa inviável continua sinalizada", r.inviaveis == [3]),
+            v("só restam problemas não corrigíveis", r.convergiu)]
+
 def limite_de_revisoes_respeitado() -> list[Verificacao]:
     ex = rodar([tarefa(1, "Trabalho grande", 6, 5, 5, 10.0), tarefa(2, "Lista rápida", 1, 2, 2, 2.0)],
                max_revisoes=0)
@@ -181,6 +196,7 @@ CENARIOS: dict[str, Callable[[], list[Verificacao]]] = {
     "revisao_conserta_o_plano": revisao_conserta_o_plano,
     "tarefa_inviavel_sinalizada": tarefa_inviavel_sinalizada,
     "sobrecarga_nao_gasta_revisoes": sobrecarga_nao_gasta_revisoes,
+    "sobrecarga_nao_esconde_falha_corrigivel": sobrecarga_nao_esconde_falha_corrigivel,
     "limite_de_revisoes_respeitado": limite_de_revisoes_respeitado,
     "plano_e_deterministico": plano_e_deterministico,
     "llm_ajusta_ordem_valido": llm_ajusta_ordem_valido,

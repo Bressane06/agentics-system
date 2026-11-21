@@ -6,6 +6,7 @@
 | revisao_conserta_o_plano | 5/5 | PASSOU |
 | tarefa_inviavel_sinalizada | 4/4 | PASSOU |
 | sobrecarga_nao_gasta_revisoes | 3/3 | PASSOU |
+| sobrecarga_nao_esconde_falha_corrigivel | 5/5 | PASSOU |
 | limite_de_revisoes_respeitado | 4/4 | PASSOU |
 | plano_e_deterministico | 1/1 | PASSOU |
 | llm_ajusta_ordem_valido | 4/4 | PASSOU |
@@ -16,4 +17,4 @@
 | llm_decide_acao_valida | 3/3 | PASSOU |
 | prompt_nao_vaza_texto_do_usuario | 1/1 | PASSOU |
 
-**Total: 43/43 verificações.**
+**Total: 48/48 verificações.**

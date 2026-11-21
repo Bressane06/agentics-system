@@ -27,6 +27,16 @@ def test_priorizador_aceita_permutacao_valida_e_renumera_posicoes():
     assert ids(ranking) == nova
     assert [i.posicao for i in ranking] == [1, 2, 3, 4]
 
+def test_priorizador_registra_quando_llm_apenas_confirma_a_ordem():
+    base = ids(PriorizadorDeterministico().priorizar(tarefas(), HOJE))
+    llm = LLMRoteirizado({"ordem": base, "justificativa": "Mudança para evitar tarefas difíceis"})
+    tracer = observability.Tracer()
+    with observability.ativar(tracer):
+        ranking = PriorizadorLLM(llm).priorizar(tarefas(), HOJE)
+    assert ids(ranking) == base
+    assert not any("Ajuste do LLM" in i.justificativa for i in ranking)
+    assert [e["etapa"] for e in tracer.eventos] == ["llm_confirmou_ordem"]
+
 @pytest.mark.parametrize("resposta", [
     {"ordem": [1, 2, 3]},                     # faltam ids
     {"ordem": [1, 2, 3, 4, 4]},               # repetido

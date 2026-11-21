@@ -76,7 +76,10 @@ def test_validar_classifica_inviavel_sobrecarga_e_cobertura():
     slots = _slots()
     inviavel = validation.validar([], [t(1, 0, 5.0)], slots, HOJE)[0]
     assert (inviavel.tipo, inviavel.corrigivel) == (validation.INVIAVEL, False)
-    sobrecarga = validation.validar([], [t(1, 1, 3.0), t(2, 1, 3.0)], slots, HOJE)
-    assert {p.tipo for p in sobrecarga} == {validation.SOBRECARGA}
+    # mesmo prazo, 6h de demanda para 4h de janela: só a última na ordem por prazo é inevitável;
+    # a primeira ficaria coberta com a ordenação certa, então é falha corrigível do plano
+    por_tarefa = {p.tarefa_id: p for p in validation.validar([], [t(1, 1, 3.0), t(2, 1, 3.0)], slots, HOJE)}
+    assert (por_tarefa[1].tipo, por_tarefa[1].corrigivel) == (validation.COBERTURA_INCOMPLETA, True)
+    assert (por_tarefa[2].tipo, por_tarefa[2].corrigivel) == (validation.SOBRECARGA, False)
     cobertura = validation.validar([], [t(1, 4, 2.0)], slots, HOJE)[0]
     assert (cobertura.tipo, cobertura.corrigivel) == (validation.COBERTURA_INCOMPLETA, True)
