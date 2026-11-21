@@ -1,10 +1,15 @@
 from dataclasses import replace
+from dataclasses import replace
 from datetime import date
 from typing import Sequence
 
 import config
 from services import observability
+
+import config
+from services import observability
 from services.domain import TarefaInfo, ItemPriorizado
+from services.llm import LLMClient, LLMError
 from services.llm import LLMClient, LLMError
 from services.tools import priority
 from services.tools.priority import Pesos
