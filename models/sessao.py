@@ -11,7 +11,8 @@ class Sessao(Base):
     data: Mapped[date]
     hora_inicio: Mapped[time]
     hora_fim: Mapped[time]
-    versao: Mapped[int] = mapped_column(default=1)         
-    status: Mapped[str] = mapped_column(String(20), default="planejada")
+    versao: Mapped[int] = mapped_column(ForeignKey("planos.id"))   # id do Plano
+    status: Mapped[str] = mapped_column(String(20), default="proposta")
 
     tarefa = relationship("Tarefa", back_populates="sessoes")
+    plano = relationship("Plano", back_populates="sessoes")
