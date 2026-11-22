@@ -96,7 +96,6 @@ Separar o que é corrigível evita gastar revisões em problemas que nenhum plan
 ## 4. Como executar
 
 ```bash
-python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 cp .env.example .env
 python -m data.seed --reset        # dados fictícios (inclui uma tarefa propositalmente inviável)
@@ -173,6 +172,7 @@ orchestrator.py     # Orquestração dos agentes
 llm.py              # Integração com modelos de linguagem
 observability.py    # Monitoramento e rastreabilidade
 plano_service.py    # Serviço de gerenciamento de planos
+```
 
 ## 8. Limitações e próximos passos
 
